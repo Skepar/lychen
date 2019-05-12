@@ -111,7 +111,6 @@ fn main() {
         unit,
         window.into_canvas()
             .accelerated()
-            .present_vsync()
             .build()
             .unwrap(),
         sdl.event_pump()
