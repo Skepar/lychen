@@ -4,7 +4,29 @@ use sdl2::rect::Rect;
 use sdl2::pixels::Color;
 use sdl2::render::WindowCanvas;
 use std::collections::HashSet;
+use std::hash::{Hash, Hasher};
 use crate::model::Cell;
+
+#[derive(PartialEq, Eq)]
+pub struct Change<'a> {
+    x: usize,
+    y: usize,
+    state: &'a Cell,
+    selected: bool
+}
+
+impl<'a> Hash for Change<'a> {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.x.hash(state);
+        self.y.hash(state);
+    }
+}
+
+impl<'a> Change<'a> {
+    pub fn new(x: usize, y: usize, state: &Cell, selected: bool) -> Change {
+        Change {x, y, state, selected }
+    }
+}
 
 pub struct UI {
     canvas: WindowCanvas,
@@ -20,11 +42,19 @@ impl UI {
         (self.unit*n as u32) as i32
     }
 
-    fn render_cell(&mut self, x: usize, y: usize, state: &Cell) {
+    fn render_cell(&mut self, x: usize, y: usize, state: &Cell, selected: bool) {
         //println!("Rendering cell ({}, {})", x, y);
         match state {
-            Cell::Alive => self.canvas.set_draw_color(Color::RGB(255, 255, 255)),
-            Cell::Dead => self.canvas.set_draw_color(Color::RGB(0, 0 ,0))
+            Cell::Alive => if selected {
+                self.canvas.set_draw_color(Color::RGB(255, 255, 255));
+            } else {
+                self.canvas.set_draw_color(Color::RGB(200, 200, 200));
+            },
+            Cell::Dead => if selected {
+                self.canvas.set_draw_color(Color::RGB(255, 255, 255));
+            } else {
+                self.canvas.set_draw_color(Color::RGB(0, 0 ,0));
+            }
         }
         self.canvas.fill_rect(Rect::new(
             self.to_screen_space(x),
@@ -34,9 +64,10 @@ impl UI {
         ));
     }
 
-    pub fn render(&mut self, changes: HashSet<(usize, usize, Cell)>) {
-        for (x, y, cell) in changes.iter() {
-            self.render_cell(*x, *y, cell);
+    pub fn render_changes(&mut self, changes: HashSet<Change>) {
+        for change in changes.iter() {
+            let Change { x, y, state, selected } = change;
+            self.render_cell(*x, *y, state, *selected);
         }
         self.canvas.present();
     }

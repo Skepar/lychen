@@ -15,8 +15,8 @@ struct Game {
     ui: ui::UI,
     events: EventPump,
     paused: bool,
-    step_rate: Duration,
-    cell_timestamp: Instant
+    step_time: Duration,
+    step_timestamp: Instant
 }
 
 impl Game {
@@ -26,25 +26,34 @@ impl Game {
             ui: ui::UI::new(canvas, unit),
             events,
             paused: false,
-            step_rate: Duration::from_millis(100),
-            cell_timestamp: Instant::now()
+            step_time: Duration::from_millis(50),
+            step_timestamp: Instant::now()
         }
     }
 
     fn handle_keycode(&mut self, key: Keycode) {
         match key {
             Keycode::Space => self.paused = !self.paused,
-            Keycode::S => self.step_rate+=Duration::from_millis(10),
-            Keycode::F => self.step_rate-=Duration::from_millis(10),
-            Keycode::D => self.step_rate = Duration::from_millis(100),
+            Keycode::S => self.step_time += Duration::from_millis(5),
+            Keycode::F => self.step_time -= Duration::from_millis(5),
+            Keycode::D => self.step_time = Duration::from_millis(50),
+            Keycode::Down | Keycode::Up |
+            Keycode::Left | Keycode:: Right => {
+                self.paused = true;
+                self.ui.render_changes(self.model.offset_selected(key));
+            },
+            Keycode::Return => {
+                self.paused = true;
+                self.ui.render_changes(self.model.flip_selected())
+            },
             _ => {}
         }
     }
 
     fn step(&mut self) {
-        if !self.paused && (self.cell_timestamp.elapsed() >= self.step_rate) {
-            self.ui.render(self.model.update());
-            self.cell_timestamp = Instant::now();
+        if !self.paused && (self.step_timestamp.elapsed() >= self.step_time) {
+            self.ui.render_changes(self.model.update());
+            self.step_timestamp = Instant::now();
         }
     }
 
@@ -85,13 +94,13 @@ fn main() {
         sdl.event_pump()
             .unwrap());
 
-    game.model.set(5, 5, Cell::Alive);
-    game.model.set(6, 5, Cell::Alive);
-    game.model.set(5, 6, Cell::Alive);
-    game.model.set(8, 6, Cell::Alive);
-    game.model.set(7, 5, Cell::Alive);
-    game.model.set(7, 7, Cell::Alive);
-    game.model.set(8, 6, Cell::Alive);
+    game.model.set(5, 5, &Cell::Alive, false);
+    game.model.set(6, 5, &Cell::Alive, false);
+    game.model.set(5, 6, &Cell::Alive, false);
+    game.model.set(8, 6, &Cell::Alive, false);
+    game.model.set(7, 5, &Cell::Alive, false);
+    game.model.set(7, 7, &Cell::Alive, false);
+    game.model.set(8, 6, &Cell::Alive, false);
 
     game.run();
 }
