@@ -6,6 +6,7 @@ use sdl2::EventPump;
 use sdl2::keyboard::Keycode;
 use std::time::{Duration, Instant};
 use crate::model::Cell;
+use sdl2::mouse::MouseButton;
 
 mod model;
 mod ui;
@@ -50,6 +51,26 @@ impl Game {
         }
     }
 
+    fn handle_mouse(&mut self, x: i32, y: i32, drawing: bool) {
+        if drawing {
+            self.ui.render_changes(
+                self.model.set(
+                    self.ui.to_model_space(x),
+                    self.ui.to_model_space(y),
+                    &Cell::Alive,
+                    false
+                )
+            );
+        } else {
+            self.ui.render_changes(
+                self.model.move_selected(
+                    self.ui.to_model_space(x),
+                    self.ui.to_model_space(y)
+                )
+            );
+        }
+    }
+
     fn step(&mut self) {
         if !self.paused && (self.step_timestamp.elapsed() >= self.step_time) {
             self.ui.render_changes(self.model.update());
@@ -65,6 +86,8 @@ impl Game {
                 match e {
                     Event::Quit {..} | Event::KeyDown {keycode: Some(Keycode::Escape),..} => break,
                     Event::KeyDown {keycode: Some(k), repeat: false,..} => self.handle_keycode(k),
+                    Event::MouseButtonDown {x, y, mouse_btn: MouseButton::Left,..} => self.handle_mouse(x, y, false),
+                    Event::MouseMotion {mousestate, x, y, ..} if mousestate.left() => self.handle_mouse(x, y, true),
                     _ => {}
                 }
             }
@@ -73,18 +96,18 @@ impl Game {
 }
 
 fn main() {
-    let unit = 10;
+    let (width, height, unit): (usize, usize, u32) = (50, 30, 10);
     let sdl = sdl2::init().unwrap();
     let video_subsystem = sdl.video().unwrap();
-    let window = video_subsystem.window("Test", unit*30, unit*20)
+    let window = video_subsystem.window("Test", unit*width as u32, unit*height as u32)
         .opengl()
         .resizable()
         .build()
         .unwrap();
 
     let mut game = Game::new(
-        30,
-        20,
+        width,
+        height,
         unit,
         window.into_canvas()
             .accelerated()

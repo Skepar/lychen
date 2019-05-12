@@ -79,6 +79,15 @@ impl Model {
         res
     }
 
+    pub fn move_selected(&mut self, x: usize, y: usize) -> HashSet<Change> {
+        let (x_old, y_old) = self.selected_tile;
+        let mut res = HashSet::new();
+        res.insert(Change::new(x_old,y_old, &self.grid[y_old][x_old], false));
+        self.selected_tile = (x, y);
+        res.insert(Change::new(x, y, &self.grid[y][x], true));
+        res
+    }
+
     pub fn flip_selected(&mut self) -> HashSet<Change> {
         let (x, y) = self.selected_tile;
         match self.grid[y][x] {
@@ -86,5 +95,4 @@ impl Model {
             Cell::Alive => self.set(x, y, &Cell::Dead, true)
         }
     }
-
 }

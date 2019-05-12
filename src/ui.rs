@@ -42,6 +42,10 @@ impl UI {
         (self.unit*n as u32) as i32
     }
 
+    pub fn to_model_space(&self, n: i32) -> usize {
+        (n as u32/self.unit) as usize
+    }
+
     fn render_cell(&mut self, x: usize, y: usize, state: &Cell, selected: bool) {
         //println!("Rendering cell ({}, {})", x, y);
         match state {
