@@ -38,11 +38,19 @@ impl App {
         })
     }
 
+    fn change_step_time(&mut self, dt: i64) {
+        if dt > 0 {
+            self.step_time += Duration::from_millis(dt as u64);
+        } else if Duration::from_millis((-dt) as u64) < self.step_time {
+            self.step_time -= Duration::from_millis((-dt) as u64);
+        }
+    }
+
     fn handle_keycode(&mut self, key: Keycode) {
         match key {
             Keycode::Space => self.paused = !self.paused,
-            Keycode::S => self.step_time += Duration::from_millis(5),
-            Keycode::F => self.step_time -= Duration::from_millis(5),
+            Keycode::S => self.change_step_time(5),
+            Keycode::F => self.change_step_time(-5),
             Keycode::D => self.step_time = Duration::from_millis(50),
             Keycode::Down | Keycode::Up |
             Keycode::Left | Keycode:: Right => {
@@ -87,6 +95,7 @@ impl App {
     pub fn run(&mut self) {
         loop {
             self.step();
+            // the app's state is refreshed only once every 10ms
             std::thread::sleep(Duration::from_millis(10));
             if let Some(e) = self.events.poll_event() {
                 match e {

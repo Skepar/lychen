@@ -26,6 +26,6 @@ fn main() {
                 Err(e)  => panic!(e)
             }
         },
-        Err(e) => panic!(e)
+        Err(e) => settings::print_help(e)
     }
 }

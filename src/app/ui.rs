@@ -7,6 +7,7 @@ use std::collections::HashSet;
 use std::hash::{Hash, Hasher};
 use super::model::Cell;
 
+// a Change represents the evolution on the screen of a cell in the model
 #[derive(PartialEq, Eq)]
 pub struct Change<'a> {
     x: usize,
@@ -38,16 +39,17 @@ impl UI {
         UI { canvas, unit }
     }
 
+    // allow us to convert a cell in the model to a point on the screen
     fn to_screen_space(&self, n: usize) -> i32 {
         (self.unit*n as u32) as i32
     }
 
+    // allow us to convert a point on the screen to a cell in the model
     pub fn to_model_space(&self, n: i32) -> usize {
         (n as u32/self.unit) as usize
     }
 
     fn render_cell(&mut self, x: usize, y: usize, state: &Cell, selected: bool) {
-        //println!("Rendering cell ({}, {})", x, y);
         match state {
             Cell::Alive => if selected {
                 self.canvas.set_draw_color(Color::RGB(255, 255, 255));
