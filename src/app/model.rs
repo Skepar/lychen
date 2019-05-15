@@ -1,6 +1,6 @@
 use std::collections::HashSet;
 use sdl2::keyboard::Keycode;
-use crate::ui::Change;
+use super::ui::Change;
 
 #[derive(PartialEq, Eq, Hash, Clone, Copy)]
 pub enum Cell {

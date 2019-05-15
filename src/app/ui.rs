@@ -5,7 +5,7 @@ use sdl2::pixels::Color;
 use sdl2::render::WindowCanvas;
 use std::collections::HashSet;
 use std::hash::{Hash, Hasher};
-use crate::model::Cell;
+use super::model::Cell;
 
 #[derive(PartialEq, Eq)]
 pub struct Change<'a> {
